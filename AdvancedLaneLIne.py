@@ -56,7 +56,7 @@ def points ():
 
 def calibration(objpoints, imgpoints):
   # Read an image camera_cal_images
-  img = cv2.imread('./input_images/test6.jpg')
+  img = cv2.imread('./input_images/test5.jpg')
   img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
   img_size = (img.shape[1], img.shape[0])
 
@@ -66,7 +66,7 @@ def calibration(objpoints, imgpoints):
 # './input_images/test6.jpg'
 # './camera_cal_images/calibration1.jpg'
 def undistortion(mtx, dist):
-  img = cv2.imread('./input_images/test6.jpg')
+  img = cv2.imread('./input_images/test5.jpg')
   img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
   undist = cv2.undistort(img, mtx, dist, None, mtx)
 
@@ -101,7 +101,7 @@ def undistortion(mtx, dist):
 # ny = 6 # the number of inside corners in y
 
 #===================================================
-def unwarp(undist, src, ret):
+def unwarp(undist, src, dst, ret):
   # Convert to grayscale
   gray = cv2.cvtColor(undist, cv2.COLOR_BGR2GRAY)
   # Find the chessboard corners
@@ -112,7 +112,7 @@ def unwarp(undist, src, ret):
     # a) draw corners
     # img = cv2.drawChessboardCorners(undist, (nx, ny), corners, ret)
     # b) define 4 source points 
-    offset = 450
+    # offset = 450
     img_size = (gray.shape[1], gray.shape[0])
     # src = np.float32([corners[0], corners[nx-1], corners[-1], corners[-nx]])
     # #Note: you could pick any four of the detected corners 
@@ -121,9 +121,19 @@ def unwarp(undist, src, ret):
     # # corners that were automatically detected during the undistortion steps
     # #We recommend using the automatic detection of corners in your code
     # # c) define 4 destination points 
-    dst = np.float32([[offset, 0], [img_size[0]-offset, 0], 
-                                     [offset, img_size[1]], 
-                                     [img_size[0]-offset, img_size[1]]])    
+
+    
+
+    # print(src)
+    # print(dst)
+	# dst = np.float32([[(img_size[0]/4), 0],
+	# 	[(img_size[0]/4), img_size[1]],
+	# 	[(img_size[0]*3/4), img_size[1]],
+	# 	[(img_size[0]*3/4), 0]])
+
+    # dst = np.float32([[offset, 0], [img_size[0]-offset, 0], 
+    #                                  [offset, img_size[1]], 
+    #                                  [img_size[0]-offset, img_size[1]]])    
     # d) use cv2.getPerspectiveTransform() to get M, the transform matrix
     M = cv2.getPerspectiveTransform(src, dst)
     # e) use cv2.warpPerspective() to warp your image to a top-down view
@@ -131,10 +141,77 @@ def unwarp(undist, src, ret):
     
   return warped, M
 
-src = np.float32([(575,464),
-                  (707,464), 
-                  (258,682), 
-                  (1049,682)])
+def abs_sobel_thresh(img, orient='x', thresh_min=0, thresh_max=255):
+    # Calculate directional gradient
+    # Apply threshold
+    # Convert to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    # Apply x or y gradient with the OpenCV Sobel() function
+    # and take the absolute value
+    if orient == 'x':
+        abs_sobel = np.absolute(cv2.Sobel(gray, cv2.CV_64F, 1, 0))
+    if orient == 'y':
+        abs_sobel = np.absolute(cv2.Sobel(gray, cv2.CV_64F, 0, 1))
+    # Rescale back to 8 bit integer
+    scaled_sobel = np.uint8(255*abs_sobel/np.max(abs_sobel))
+    # Create a copy and apply the threshold
+    binary_output = np.zeros_like(scaled_sobel)
+    # Here I'm using inclusive (>=, <=) thresholds, but exclusive is ok too
+    binary_output[(scaled_sobel >= thresh_min) & (scaled_sobel <= thresh_max)] = 1
+    
+    # Return the result
+    return binary_output
+
+def mag_thresh(img, sobel_kernel=9, mag_thresh=(30, 100)):
+    # Calculate gradient magnitude
+    # Apply threshold
+    # Convert to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    # Take both Sobel x and y gradients
+    sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=sobel_kernel)
+    sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=sobel_kernel)
+    # Calculate the gradient magnitude
+    # 3) Calculate the magnitude 
+    sobelxy = np.sqrt(sobelx ** 2 + sobely ** 2)
+    # 4) Scale to 8-bit (0 - 255) and convert to type = np.uint8
+    scaledSobel = np.uint8(255*sobelxy/np.max(sobelxy))
+    # Create a binary image of ones where threshold is met, zeros otherwise
+    mag_binary = np.zeros_like(scaledSobel)
+    mag_binary[(scaledSobel >= mag_thresh[0]) & (scaledSobel <= mag_thresh[1])] = 1
+    # Return the binary image
+    return mag_binary
+
+def dir_threshold(img, sobel_kernel=3, thresh=(0, np.pi/2)):
+    # Calculate gradient direction
+    # Apply threshold
+    # Grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    # Calculate the x and y gradients
+    sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=sobel_kernel)
+    sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=sobel_kernel)
+    # Take the absolute value of the gradient direction, 
+    # apply a threshold, and create a binary image result
+    # 3) Take the absolute value of the x and y gradients
+    abs_sobelx = np.absolute(sobelx)
+    abs_sobely = np.absolute(sobely)
+    # 4) Use np.arctan2(abs_sobely, abs_sobelx) to calculate the direction of the gradient 
+    gradDir = np.arctan2(abs_sobely, abs_sobelx)
+    # 5) Create a binary mask where direction thresholds are met
+    dir_binary = np.zeros_like(gradDir)
+    dir_binary[(gradDir >= thresh[0]) & (gradDir <= thresh[1])] = 1
+    # 6) Return this mask as your binary_output image
+    # binary_output = np.copy(img) # Remove this line
+    # Return the binary image
+    return dir_binary
+
+def combined(img, sobel_kernel=9, mag_thresh=(30, 100), thresh=(0, np.pi/2)):
+    
+
+    return combined
+# src = np.float32([(575,464),
+#                   (707,464), 
+#                   (258,682), 
+#                   (1049,682)])
 objpoints, imgpoints, corners, ret = points()
 
 # print(objpoints)
@@ -145,18 +222,90 @@ mtx, dist, img = calibration(objpoints, imgpoints)
 # print("dist: ",dist)
 undist = undistortion(mtx, dist)
 
-unwarped, M = unwarp(undist, src, ret)
+img_size = (img.shape[1], img.shape[0])
 
-fig, axs = plt.subplots(1, 3, figsize=(20, 10))
+src = np.float32([((img_size[0]/2)-55,(img_size[1]/2)+100),
+                  ((img_size[0]/6)-10,img_size[1]), 
+                  ((img_size[0]*5/6)+60,img_size[1]), 
+                  ((img_size[0]/2)+55,(img_size[1]/2)+100)])
 
-axs[0].imshow(img)
-axs[0].set_title('Original Image', fontsize=30)
+dst = np.float32([((img_size[0]/4),0),
+                  (img_size[0]/4,img_size[1]), 
+                  ((img_size[0]*3)/4,img_size[1]), 
+                  ((img_size[0]*3)/4,0)])
 
-axs[1].imshow(undist)
-axs[1].set_title('Undistorted Image', fontsize=30)
+unwarped, M = unwarp(undist, src, dst, ret)
 
-axs[2].imshow(unwarped)
-axs[2].set_title('Unwarped Image', fontsize=30)
+# Choose a Sobel kernel size
+ksize = 3 # Choose a larger odd number to smooth gradient measurements
+
+# Apply each of the thresholding functions
+grad_binary_x = abs_sobel_thresh(unwarped, orient='x', thresh_min=20, thresh_max=100)
+grad_binary_y = abs_sobel_thresh(unwarped, orient='y', thresh_min=20, thresh_max=100)
+mag_binary = mag_thresh(unwarped, sobel_kernel=3, mag_thresh=(30, 100))
+dir_binary = dir_threshold(unwarped, sobel_kernel=15, thresh=(0.7, 1.3))
+
+mag_binary2 = mag_thresh(unwarped, sobel_kernel=3, mag_thresh=(30, 100))
+dir_binary2 = dir_threshold(unwarped, sobel_kernel=15, thresh=(0.7, 1.3))
+combined = np.zeros_like(mag_binary2)
+combined[((mag_binary2 == 1) & (dir_binary2 == 1))] = 1
+
+# Visualize sobel absolute threshold
+f, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10))
+f.subplots_adjust(hspace = .2, wspace=.05)
+ax1.imshow(unwarped)
+ax1.set_title('Unwarped Image', fontsize=30)
+ax2.imshow(combined, cmap='gray')
+ax2.set_title('Sobel Absolute', fontsize=30)
+
+# fig, axs = plt.subplots(1, 3, figsize=(20, 10))
+
+# axs[0].imshow(img)
+# axs[0].set_title('Original Image', fontsize=30)
+
+# axs[1].imshow(undist)
+# x1 = [src[0][0],src[1][0],src[2][0],src[3][0],src[0][0]]
+# y1 = [src[0][1],src[1][1],src[2][1],src[3][1],src[0][1]]
+# axs[1].plot(x1,y1,color='red',linewidth=3)
+# axs[1].set_title('Undistorted Image', fontsize=30)
+
+# axs[2].imshow(unwarped)
+# x2 = [dst[0][0],dst[1][0],dst[2][0],dst[3][0],dst[0][0]]
+# y2 = [dst[0][1],dst[1][1],dst[2][1],dst[3][1],dst[0][1]]
+# axs[2].plot(x2,y2,color='red',linewidth=3)
+# axs[2].set_title('Unwarped Image', fontsize=30)
+
+# fig.tight_layout()
+# # mpimg.imsave("test-after.jpg", color_select)
+# # plt.imsave("output_images/test_before2.jpg", img)
+# # plt.imsave("output_images/test_after2.jpg", undist)
+# plt.show()
+
+
+# Visualize multiple color space channels
+unwarp_R = unwarped[:,:,0]
+unwarp_G = unwarped[:,:,1]
+unwarp_B = unwarped[:,:,2]
+unwarp_HSV = cv2.cvtColor(unwarped, cv2.COLOR_RGB2HSV)
+unwarp_H = unwarp_HSV[:,:,0]
+unwarp_S = unwarp_HSV[:,:,1]
+unwarp_V = unwarp_HSV[:,:,2]
+
+fig, axs = plt.subplots(3,2, figsize=(16, 12))
+fig.subplots_adjust(hspace = .2, wspace=.001)
+axs = axs.ravel()
+axs[0].imshow(unwarp_R, cmap='gray')
+axs[0].set_title('RGB R-channel', fontsize=30)
+axs[1].imshow(unwarp_G, cmap='gray')
+axs[1].set_title('RGB G-Channel', fontsize=30)
+axs[2].imshow(unwarp_B, cmap='gray')
+axs[2].set_title('RGB B-channel', fontsize=30)
+axs[3].imshow(unwarp_H, cmap='gray')
+axs[3].set_title('HSV H-Channel', fontsize=30)
+axs[4].imshow(unwarp_S, cmap='gray')
+axs[4].set_title('HSV S-channel', fontsize=30)
+axs[5].imshow(unwarp_V, cmap='gray')
+axs[5].set_title('HSV V-Channel', fontsize=30)
 
 fig.tight_layout()
 # mpimg.imsave("test-after.jpg", color_select)

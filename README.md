@@ -65,15 +65,15 @@ And for the road image:
 To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
 ![alt text][image2]-->
 
-#### 2. Color transformation, gradients to create a thresholded binary image
+#### 2. Combining color and gradient thresholds to create a binary image
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `another_file.py`).  Here's an example of my output for this step.  (note: this is not actually from one of the test images)
+I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `AdvancedLaneLine.py`).  Here's an example of my output for this step. 
 
 ![alt text][image3]
 
 #### 3. Perspective transform
 
-The code for my perspective transform includes a function called `warper()`, which appears in lines 1 through 8 in the file `example.py` (output_images/examples/example.py) (or, for example, in the 3rd code cell of the IPython notebook).  The `warper()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
+The code for my perspective transform includes a function called `unwarp()`, which appears in lines 104 through 132 in the file `AdvancedLaneLine.py`.  The `unwarp()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
 
 ```python
 src = np.float32(
@@ -87,19 +87,21 @@ dst = np.float32(
     [(img_size[0] * 3 / 4), img_size[1]],
     [(img_size[0] * 3 / 4), 0]])
 ```
-
 This resulted in the following source and destination points:
 
 | Source        | Destination   | 
 |:-------------:|:-------------:| 
 | 585, 460      | 320, 0        | 
-| 203, 720      | 320, 720      |
-| 1127, 720     | 960, 720      |
+| 203.33, 720      | 320, 720      |
+| 1126.66, 720     | 960, 720      |
 | 695, 460      | 960, 0        |
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
-![alt text][image4]
+<center>
+<img src="./output_images/figure_1.png" alt="Road image" style="width: 100%;"/>
+<!--<figcaption>Distorted image</figcaption>-->
+</center>
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
