@@ -40,25 +40,15 @@ I then used the output `objpoints` and `imgpoints` to compute the camera calibra
 
 For the chessboard image:
 
-<figure>
 <center>
 <img src="./output_images/compare_chessboard.jpg" alt="Distorted" style="width: 100%;"/>
-<!--<figcaption>Distorted image</figcaption>-->
 </center>
-</figure>
-<!--![Distorted](./output_images/test_before.jpg){width= 40%}
-*Distorted*
 
-![Undistorted](./output_images/test_after.jpg)
-*Unistorted*-->
 And for the road image:
 
-<figure>
 <center>
 <img src="./output_images/compare_road.jpg" alt="Road image" style="width: 100%;"/>
-<!--<figcaption>Distorted image</figcaption>-->
 </center>
-</figure>
 
 <!--
 #### 1. Provide an example of a distortion-corrected image.
