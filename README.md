@@ -52,6 +52,7 @@ For the chessboard image:
 ![Undistorted](./output_images/test_after.jpg)
 *Unistorted*-->
 And for the road image:
+
 <figure>
 <center>
 <img src="./output_images/compare_road.jpg" alt="Road image" style="width: 100%;"/>
@@ -91,6 +92,7 @@ This resulted in the following source and destination points:
 | 695, 460      | 960, 0        |
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
+
 <center>
 <img src="./output_images/unwarped.jpg" alt="Road image" style="width: 100%;"/>
 <!--<figcaption>Distorted image</figcaption>-->
@@ -101,18 +103,21 @@ I verified that my perspective transform was working as expected by drawing the 
 I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `AdvancedLaneLine.py`).  Here's my output for this step. 
 
 The Sobel gradient thresholds:
+
 <center>
 <img src="./output_images/gradients.jpg" alt="Road image" style="width: 100%;"/>
 <!--<figcaption>Distorted image</figcaption>-->
 </center>
 
 The HLS color thresholds:
+
 <center>
 <img src="./output_images/colors.jpg" alt="Road image" style="width: 100%;"/>
 <!--<figcaption>Distorted image</figcaption>-->
 </center>
 
 And the combined gradient and HLS color thresholds:
+
 <center>
 <img src="./output_images/colors.jpg" alt="Road image" style="width: 100%;"/>
 <!--<figcaption>Distorted image</figcaption>-->
