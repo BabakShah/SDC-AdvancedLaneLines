@@ -85,7 +85,6 @@ I verified that my perspective transform was working as expected by drawing the 
 
 <center>
 <img src="./output_images/unwarped.jpg" alt="Road image" style="width: 100%;"/>
-<!--<figcaption>Distorted image</figcaption>-->
 </center>
 
 #### 3. Combining color and gradient thresholds
@@ -96,21 +95,18 @@ The Sobel gradient thresholds:
 
 <center>
 <img src="./output_images/gradients.jpg" alt="Road image" style="width: 100%;"/>
-<!--<figcaption>Distorted image</figcaption>-->
 </center>
 
 The HLS color thresholds:
 
 <center>
 <img src="./output_images/colors.jpg" alt="Road image" style="width: 100%;"/>
-<!--<figcaption>Distorted image</figcaption>-->
 </center>
 
 And the combined gradient and HLS color thresholds:
 
 <center>
 <img src="./output_images/colors.jpg" alt="Road image" style="width: 100%;"/>
-<!--<figcaption>Distorted image</figcaption>-->
 </center>
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
