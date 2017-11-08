@@ -65,13 +65,7 @@ And for the road image:
 To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
 ![alt text][image2]-->
 
-#### 2. Combining color and gradient thresholds to create a binary image
-
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `AdvancedLaneLine.py`).  Here's an example of my output for this step. 
-
-![alt text][image3]
-
-#### 3. Perspective transform
+#### 2. Perspective transform
 
 The code for my perspective transform includes a function called `unwarp()`, which appears in lines 104 through 132 in the file `AdvancedLaneLine.py`.  The `unwarp()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
 
@@ -97,9 +91,30 @@ This resulted in the following source and destination points:
 | 695, 460      | 960, 0        |
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
-
 <center>
-<img src="./output_images/figure_1.png" alt="Road image" style="width: 100%;"/>
+<img src="./output_images/unwarped.jpg" alt="Road image" style="width: 100%;"/>
+<!--<figcaption>Distorted image</figcaption>-->
+</center>
+
+#### 3. Combining color and gradient thresholds
+
+I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `AdvancedLaneLine.py`).  Here's my output for this step. 
+
+The Sobel gradient thresholds:
+<center>
+<img src="./output_images/gradients.jpg" alt="Road image" style="width: 100%;"/>
+<!--<figcaption>Distorted image</figcaption>-->
+</center>
+
+The HLS color thresholds:
+<center>
+<img src="./output_images/colors.jpg" alt="Road image" style="width: 100%;"/>
+<!--<figcaption>Distorted image</figcaption>-->
+</center>
+
+And the combined gradient and HLS color thresholds:
+<center>
+<img src="./output_images/colors.jpg" alt="Road image" style="width: 100%;"/>
 <!--<figcaption>Distorted image</figcaption>-->
 </center>
 
@@ -131,6 +146,6 @@ Here's a [link to my video result](./project_video.mp4)
 
 ### Discussion
 
-#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### Make the pipeline more robust?
 
 Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
