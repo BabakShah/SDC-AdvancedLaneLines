@@ -84,7 +84,7 @@ This resulted in the following source and destination points:
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
 <center>
-<img src="./output_images/unwarped.jpg" alt="Road image" style="width: 100%;"/>
+<img src="./output_images/Unwarped.jpg" alt="Road image" style="width: 100%;"/>
 </center>
 
 #### 3. Combining color and gradient thresholds
@@ -94,19 +94,19 @@ I used a combination of color and gradient thresholds to generate a binary image
 The Sobel gradient thresholds:
 
 <center>
-<img src="./output_images/gradients.jpg" alt="Road image" style="width: 100%;"/>
+<img src="./output_images/Gradients.jpg" alt="Road image" style="width: 100%;"/>
 </center>
 
 The HLS color thresholds:
 
 <center>
-<img src="./output_images/colors.jpg" alt="Road image" style="width: 100%;"/>
+<img src="./output_images/Colors.jpg" alt="Road image" style="width: 100%;"/>
 </center>
 
 And the combined gradient and HLS color thresholds:
 
 <center>
-<img src="./output_images/colors.jpg" alt="Road image" style="width: 100%;"/>
+<img src="./output_images/Colors.jpg" alt="Road image" style="width: 100%;"/>
 </center>
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
