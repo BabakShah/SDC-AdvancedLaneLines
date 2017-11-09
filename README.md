@@ -106,7 +106,7 @@ The HLS color thresholds:
 And the combined gradient and HLS color thresholds:
 
 <center>
-<img src="./output_images/Colors.jpg" alt="Road image" style="width: 100%;"/>
+<img src="./output_images/Combined1.jpg" alt="Road image" style="width: 100%;"/>
 </center>
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
