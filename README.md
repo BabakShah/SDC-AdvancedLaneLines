@@ -109,27 +109,88 @@ And the combined gradient and HLS color thresholds:
 <img src="./output_images/Combined1.jpg" alt="Road image" style="width: 100%;"/>
 </center>
 
-#### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+#### 4. Identify lane-line pixels and fit their positions with a polynomial.
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+Then I did fit my lane lines with a 2nd order polynomial like this:
 
-![alt text][image5]
+<center>
+<img src="./output_images/SlidingWindow.png" alt="Road image" style="width: 100%;"/>
+</center>
 
-#### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
+<center>
+<img src="./output_images/Histogram.png" alt="Road image" style="width: 100%;"/>
+</center>
 
-I did this in lines # through # in my code in `my_other_file.py`
+<center>
+<img src="./output_images/PolyPrevious.png" alt="Road image" style="width: 100%;"/>
+</center>
 
-#### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
+#### 5. Calculating the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+The code to calculate the radius of curvature of the lane and the position of the vehicle with respect to center is as follows:
 
-![alt text][image6]
+```python
+# Method to determine radius of curvature and distance from lane center 
+# based on binary image, polynomial fit, and L and R lane pixel indices
+def calc_curv_rad_and_center_dist(bin_img, l_fit, r_fit, l_lane_inds, r_lane_inds):
+    # Define conversions in x and y from pixels space to meters
+    ym_per_pix = 3.048/100 # meters per pixel in y dimension, lane line is 10 ft = 3.048 meters
+    xm_per_pix = 3.7/378 # meters per pixel in x dimension, lane width is 12 ft = 3.7 meters
+    left_curverad, right_curverad, center_dist = (0, 0, 0)
+    # Define y-value where we want radius of curvature
+    # I'll choose the maximum y-value, corresponding to the bottom of the image
+    h = bin_img.shape[0]
+    ploty = np.linspace(0, h-1, h)
+    y_eval = np.max(ploty)
+  
+    # Identify the x and y positions of all nonzero pixels in the image
+    nonzero = bin_img.nonzero()
+    nonzeroy = np.array(nonzero[0])
+    nonzerox = np.array(nonzero[1])
+    # Again, extract left and right line pixel positions
+    leftx = nonzerox[l_lane_inds]
+    lefty = nonzeroy[l_lane_inds] 
+    rightx = nonzerox[r_lane_inds]
+    righty = nonzeroy[r_lane_inds]
+    
+    if len(leftx) != 0 and len(rightx) != 0:
+        # Fit new polynomials to x,y in world space
+        left_fit_cr = np.polyfit(lefty*ym_per_pix, leftx*xm_per_pix, 2)
+        right_fit_cr = np.polyfit(righty*ym_per_pix, rightx*xm_per_pix, 2)
+        # Calculate the new radii of curvature
+        left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
+        right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
+        # Now our radius of curvature is in meters
+    
+    # Distance from center is image x midpoint - mean of l_fit and r_fit intercepts 
+    if r_fit is not None and l_fit is not None:
+        car_position = bin_img.shape[1]/2
+        l_fit_x_int = l_fit[0]*h**2 + l_fit[1]*h + l_fit[2]
+        r_fit_x_int = r_fit[0]*h**2 + r_fit[1]*h + r_fit[2]
+        lane_center_position = (r_fit_x_int + l_fit_x_int) /2
+        center_dist = (car_position - lane_center_position) * xm_per_pix
+    return left_curverad, right_curverad, center_dist
+print('...')
 
+rad_l, rad_r, d_center = calc_curv_rad_and_center_dist(exampleImg_bin, left_fit, right_fit, left_lane_inds, right_lane_inds)
+
+print('Radius of curvature for example:', rad_l, 'm,', rad_r, 'm')
+print('Distance from lane center for example:', d_center, 'm')
+```
+#### 6. Image of result plotted back down onto the road such that the lane area is identified clearly.
+
+I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `draw_lane()`.  Here is an example of my result on a test image:
+
+Wit and without Radius and Lane calculations:
+
+<center>
+<img src="./output_images/DrawRadius.jpg" alt="Road image" style="width: 100%;"/>
+</center>
 ---
 
 ### Pipeline (video)
 
-#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
+#### 1. Final video output
 
 Here's a [link to my video result](./project_video.mp4)
 
