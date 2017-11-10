@@ -82,7 +82,7 @@ I verified that my perspective transform was working as expected by drawing the 
 
 #### 3. Combining color and gradient thresholds
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines 227 through 241 in `AdvancedLaneLine.py`).  Here's my output for this step. 
+I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines 227 through 241 in `Clean_AdvancedLaneLine.py`).  Here's my output for this step. 
 
 The Sobel gradient thresholds:
 
@@ -104,7 +104,7 @@ And the combined gradient and HLS color thresholds:
 
 #### 4. Identify lane-line pixels and fit their positions with a polynomial.
 
-Then I did fit my lane lines with a 2nd order polynomial like this (lines 245 through 361 in `AdvancedLaneLine.py`):
+Then I did fit my lane lines with a 2nd order polynomial like this (lines 245 through 361 in `Clean_AdvancedLaneLine.py`):
 
 <!--<center>
 <img src="./output_images/SlidingWindow.png" alt="Road image" style="width: 100%;"/>
@@ -120,7 +120,7 @@ Then I did fit my lane lines with a 2nd order polynomial like this (lines 245 th
 
 #### 5. Calculating the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-The code to calculate the radius of curvature of the lane and the position of the vehicle with respect to center is as follows (lines 363 through 406 in `AdvancedLaneLine.py`):
+The code to calculate the radius of curvature of the lane and the position of the vehicle with respect to center is as follows (lines 363 through 406 in `Clean_AdvancedLaneLine.py`):
 
 ```python
 # Method to determine radius of curvature and distance from lane center 
@@ -172,7 +172,7 @@ print('Distance from lane center for example:', d_center, 'm')
 ```
 #### 6. Image of result plotted back down onto the road such that the lane area is identified clearly.
 
-With and without radius and lane calculations (lines 410 through 458 in `AdvancedLaneLine.py`):
+With and without radius and lane calculations (lines 410 through 458 in `Clean_AdvancedLaneLine.py`):
 
 <center>
 <img src="./output_images/DrawRadius.jpg" alt="Road image" style="width: 100%;"/>
@@ -183,7 +183,7 @@ With and without radius and lane calculations (lines 410 through 458 in `Advance
 
 #### 1. Final video output 
 
-(lines 460 through 647 in `AdvancedLaneLine.py`)
+(lines 460 through 647 in `Clean_AdvancedLaneLine.py`)
 Here's a [link to my video result](./project_video_output.mp4) 
 
 ---
