@@ -1,6 +1,13 @@
 # SDC-AdvancedLaneLines
 Self-driving Car Project: Advanced Lane Lines Detection and Tracking
 
+<center>
+<img src="output_images/Lane-Keeping-Assist.jpg" width="80%" alt="NVIDIA end-to-end learning" />
+</center>
+
+Hello there! I'm Babak. Let me introduce you to my project. In used computer vision techniques to detect and track lane lines from a
+front-facing stereo camera. This algorithm can be used in conjunction with steering control for ADAS functions such as lane keep assist, lane departure warning. This project was written using Python object oriented programming.
+
 **Advanced Lane Finding Project**
 
 The steps of this project are the following:
@@ -111,17 +118,17 @@ And the combined gradient and HLS color thresholds:
 
 Then I did fit my lane lines with a 2nd order polynomial like this:
 
-<center>
+<!--<center>
 <img src="./output_images/SlidingWindow.png" alt="Road image" style="width: 100%;"/>
-</center>
+</center>-->
 
 <center>
-<img src="./output_images/Histogram.png" alt="Road image" style="width: 100%;"/>
+<img src="./output_images/Histogram.jpg" alt="Road image" style="width: 100%;"/>
 </center>
 
-<center>
+<!--<center>
 <img src="./output_images/PolyPrevious.png" alt="Road image" style="width: 100%;"/>
-</center>
+</center>-->
 
 #### 5. Calculating the radius of curvature of the lane and the position of the vehicle with respect to center.
 
