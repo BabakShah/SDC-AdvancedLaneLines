@@ -21,18 +21,6 @@ The steps of this project are the following:
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
-[//]: # (Image References)
-
-[image1]: ./examples/undistort_output.png "Undistorted"
-[image2]: ./test_images/test1.jpg "Road Transformed"
-[image3]: ./examples/binary_combo_example.jpg "Binary Example"
-[image4]: ./examples/warped_straight_lines.jpg "Warp Example"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
-[image6]: ./examples/example_output.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
-
-
-
 ---
 
 ### Pipeline (single images)
@@ -94,7 +82,7 @@ I verified that my perspective transform was working as expected by drawing the 
 
 #### 3. Combining color and gradient thresholds
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines # through # in `AdvancedLaneLine.py`).  Here's my output for this step. 
+I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at lines 227 through 241 in `AdvancedLaneLine.py`).  Here's my output for this step. 
 
 The Sobel gradient thresholds:
 
@@ -116,7 +104,7 @@ And the combined gradient and HLS color thresholds:
 
 #### 4. Identify lane-line pixels and fit their positions with a polynomial.
 
-Then I did fit my lane lines with a 2nd order polynomial like this:
+Then I did fit my lane lines with a 2nd order polynomial like this (lines 245 through 361 in `AdvancedLaneLine.py`):
 
 <!--<center>
 <img src="./output_images/SlidingWindow.png" alt="Road image" style="width: 100%;"/>
@@ -132,7 +120,7 @@ Then I did fit my lane lines with a 2nd order polynomial like this:
 
 #### 5. Calculating the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-The code to calculate the radius of curvature of the lane and the position of the vehicle with respect to center is as follows:
+The code to calculate the radius of curvature of the lane and the position of the vehicle with respect to center is as follows (lines 363 through 406 in `AdvancedLaneLine.py`):
 
 ```python
 # Method to determine radius of curvature and distance from lane center 
@@ -184,7 +172,7 @@ print('Distance from lane center for example:', d_center, 'm')
 ```
 #### 6. Image of result plotted back down onto the road such that the lane area is identified clearly.
 
-With and without radius and lane calculations:
+With and without radius and lane calculations (lines 410 through 458 in `AdvancedLaneLine.py`):
 
 <center>
 <img src="./output_images/DrawRadius.jpg" alt="Road image" style="width: 100%;"/>
@@ -193,13 +181,14 @@ With and without radius and lane calculations:
 
 ### Pipeline (video)
 
-#### 1. Final video output
+#### 1. Final video output 
 
-Here's a [link to my video result](./project_video_output.mp4)
+(lines 460 through 647 in `AdvancedLaneLine.py`)
+Here's a [link to my video result](./project_video_output.mp4) 
 
 ---
 
 ### Discussion on making the pipeline more robust?
 
-I will improve my algorithm to be more robust. These include different color space thresholding, rejecting new fits that deviate more than a certain amount or if the confidence in the left fit is high and right fit deviates too much i.e. if fits are not parallel in order to force parallel fits. 
+I will improve my algorithm to be more robust. These include different color space thresholding, removing new fits that deviate more than a certain amount or if fits are not parallel force parallel fits. 
 
