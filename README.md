@@ -32,8 +32,6 @@ The steps of this project are the following:
 
 #### 1. Camera calibration and distortion-correction
 
-The code for this step is contained in lines 11 through 76 of the file called `AdvanceLaneLine.py`).  
-
 I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
 
 I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
@@ -58,7 +56,7 @@ To demonstrate this step, I will describe how I apply the distortion correction 
 
 #### 2. Perspective transform
 
-The code for my perspective transform includes a function called `unwarp()`, which appears in lines 104 through 132 in the file `AdvancedLaneLine.py`.  The `unwarp()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
+The code for my perspective transform includes a function called `unwarp()`.  The `unwarp()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
 
 ```python
 src = np.float32(
@@ -179,9 +177,7 @@ print('Distance from lane center for example:', d_center, 'm')
 ```
 #### 6. Image of result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `draw_lane()`.  Here is an example of my result on a test image:
-
-Wit and without Radius and Lane calculations:
+With and without radius and lane calculations:
 
 <center>
 <img src="./output_images/DrawRadius.jpg" alt="Road image" style="width: 100%;"/>
@@ -192,12 +188,11 @@ Wit and without Radius and Lane calculations:
 
 #### 1. Final video output
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_video_output.mp4)
 
 ---
 
-### Discussion
+### Discussion on making the pipeline more robust?
 
-#### Make the pipeline more robust?
+I will improve my algorithm to be more robust. These include different color space thresholding, rejecting new fits that deviate more than a certain amount or if the confidence in the left fit is high and right fit deviates too much i.e. if fits are not parallel in order to force parallel fits. 
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
