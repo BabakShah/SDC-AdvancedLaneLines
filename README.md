@@ -1,21 +1,19 @@
-# SDC-AdvancedLaneLines
-Self-driving Car Project: Advanced Lane Lines Detection and Tracking
+# Self-driving Car Project: Advanced Lane Lines Detection and Tracking
 
 <center>
-<img src="output_images/Lane-Keeping-Assist.jpg" width="80%" alt="NVIDIA end-to-end learning" />
+<img src="output_images/Lane-Keeping-Assist.jpg" width="90%" alt="NVIDIA end-to-end learning" />
 </center>
 
-Hello there! I'm Babak. Let me introduce you to my project. In used computer vision techniques to detect and track lane lines from a
-front-facing stereo camera. This algorithm can be used in conjunction with steering control for ADAS functions such as lane keep assist, lane departure warning. This project was written using Python object oriented programming.
+Hello there! I'm Babak. Let me introduce you to my project. In this project, I used computer vision techniques to detect and track lane lines from a front-facing stereo camera. This algorithm can be used in conjunction with steering control for ADAS functions such as lane keep assist, and lane departure warning. This project was written using Python object oriented programming.
 
-**Advanced Lane Finding Project**
+### Pipeline:
 
 The steps of this project are the following:
 
 * Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
 * Apply a distortion correction to raw images.
-* Use color transforms, gradients, etc., to create a thresholded binary image.
-* Apply a perspective transform to rectify binary image ("birds-eye view").
+* Apply a perspective transform to rectify image ("birds-eye view").
+* Use color transforms, gradients, etc. to create a thresholded binary image.
 * Detect lane pixels and fit to find the lane boundary.
 * Determine the curvature of the lane and vehicle position with respect to center.
 * Warp the detected lane boundaries back onto the original image.
@@ -23,13 +21,21 @@ The steps of this project are the following:
 
 ---
 
-### Pipeline (single images)
+### Detailed Pipeline (single images)
 
-#### 1. Camera calibration and distortion-correction
+#### 1. Camera calibration 
 
-I start by preparing "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection.  
+I start camera calibration by using chessboard images. Using the function `cv2.findChessboardCorners()` I get the corners of the chessboard. I drew the corners on the chessboard images as shown below using the function `cv2.drawChessboardCorners`. 
 
-I then used the output `objpoints` and `imgpoints` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
+<center>
+<img src="./ChessboardsWithCorners.png" alt="Distorted" style="width: 100%;"/>
+</center>
+
+I then prepared "object points", which will be the (x, y, z) coordinates of the chessboard corners in the world. Here I am assuming the chessboard is fixed on the (x, y) plane at z=0, such that the object points are the same for each calibration image.  Thus, `objp` is just a replicated array of coordinates, and `objpoints` will be appended with a copy of it every time I successfully detect all chessboard corners in a test image.  `imgpoints` will be appended with the (x, y) pixel position of each of the corners in the image plane with each successful chessboard detection. Finally, used the output `objpoints` and `imgpoints` to compute the camera calibration  matrix and distortion coefficients using the `cv2.calibrateCamera()` function.  
+
+#### 2. Distortion correction
+
+Using the camera matrix and distortion coefficients from the previous step, I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result: 
 
 For the chessboard image:
 
@@ -43,38 +49,18 @@ And for the road image:
 <img src="./output_images/compare_road.jpg" alt="Road image" style="width: 100%;"/>
 </center>
 
-<!--
-#### 1. Provide an example of a distortion-corrected image.
+#### 3. Perspective transform
 
-To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
-![alt text][image2]-->
-
-#### 2. Perspective transform
-
-The code for my perspective transform includes a function called `unwarp()`.  The `unwarp()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points.  I chose the hardcode the source and destination points in the following manner:
-
-```python
-src = np.float32(
-    [[(img_size[0] / 2) - 55, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 10), img_size[1]],
-    [(img_size[0] * 5 / 6) + 60, img_size[1]],
-    [(img_size[0] / 2 + 55), img_size[1] / 2 + 100]])
-dst = np.float32(
-    [[(img_size[0] / 4), 0],
-    [(img_size[0] / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), img_size[1]],
-    [(img_size[0] * 3 / 4), 0]])
-```
-This resulted in the following source and destination points:
+The code for my perspective transform includes two functions. First, calculated the perspective transform matrix using `cv2.getPerspectiveTrandform` function from four points on the original image (source points) to four desired image points (destination points). Then used `cv2.warpPerspective()` function, it takes the undistorted image and perspective transform to apply the perspective transform. I chose the source and destination points as follows by measuring the input images:
 
 | Source        | Destination   | 
 |:-------------:|:-------------:| 
-| 585, 460      | 320, 0        | 
-| 203.33, 720      | 320, 720      |
-| 1126.66, 720     | 960, 720      |
-| 695, 460      | 960, 0        |
+| 575, 460      | 450, 0        | 
+| 707, 460      | 850, 0     	  |
+| 260, 680      | 450, 700  	  |
+| 1050, 680     | 850, 700      |
 
-I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
+I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto the original image and its transformed counterpart..
 
 <center>
 <img src="./output_images/Unwarped.jpg" alt="Road image" style="width: 100%;"/>
