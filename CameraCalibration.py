@@ -2,12 +2,13 @@
 #=== Importing libraries =====================================================
 #=============================================================================
 
-import numpy as np
 import cv2
 import pickle
 import glob
+import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import imageio
 imageio.plugins.ffmpeg.download()
 from ipywidgets import interact, interactive, fixed
@@ -36,15 +37,16 @@ imgpoints = [] # 2D points in image plane
 # Read and make a list of calibration images
 images = glob.glob('./camera_cal_images/*.jpg')
 
+fig, axs = plt.subplots(4, 4, figsize=(24, 10))
+fig.tight_layout()
+axs = axs.ravel()
+
 # Go through the list and search for chess board corners
-for i, fname in enumerate(images):
+for i, image in enumerate(images):
 
   # Read in each image
-  img = cv2.imread(fname) 
+  img = cv2.imread(image) 
 
-  fig, axs = plt.subplots(5,4, figsize=(16,11))
-  fig.subplots_adjust(hspace = .2, wspace = 0.001)
-  axs.ravel()
   # Convert image to grayscale
   gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
@@ -57,14 +59,16 @@ for i, fname in enumerate(images):
     objpoints.append(objp)
 
     # Draw corners on the chessboard
-    drawimg = cv2.drawChessboardCorners(img, (9,6), corners, ret)
+    withcorners = cv2.drawChessboardCorners(img, (9,6), corners, ret)
  
-    # Show the chessboard images with the corners drawn on them
-  # axs[i].axis('off')
-  # axs[i].imshow(drawimg)
-    # cv2.imshow('FRAME',drawimg)
+    # Show the chessboard images with the corners drawn on them (one-by-one)
+    # cv2.imshow('FRAME',drawcorners)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
+
+    # Show the chessboard images with the corners drawn on them (as a 4x4 grid)
+    axs[i].imshow(withcorners)
+plt.show()
 
 # Camera calibration, it takes in object, image points and shape of the input image ..
 # and returns the distortion coefs (dist), camera matrix to transform 3D obj points to 2D image points ..
@@ -73,20 +77,10 @@ ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.sh
 
 print('Camera calibration done!')
 
-for fname in images:
-  img = cv2.imread(fname) 
-  # Undistorting the images
-  dst = cv2.undistort(img, mtx, dist, None, mtx)
-
-  cv2.imshow('FRAME2',dst)
-  cv2.waitKey(0)
-  cv2.destroyAllWindows()
-
-print('Undistortion done!')
 # Save the camera calibration result for later use (we won't worry about rvecs / tvecs)
-# dist_pickle = {}
-# dist_pickle["mtx"] = mtx
-# dist_pickle["dist"] = dist
-# pickle.dump( dist_pickle, open( "calibration.p", "wb" ) )
-# './input_images/test6.jpg'
-# './camera_cal_images/calibration1.jpg'
+dist_pickle = {}
+dist_pickle["mtx"] = mtx
+dist_pickle["dist"] = dist
+pickle.dump( dist_pickle, open( "calibration.p", "wb" ))
+
+print('Camera matrix and distortion coefs saved!')
