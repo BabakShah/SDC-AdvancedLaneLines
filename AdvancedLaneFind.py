@@ -415,8 +415,60 @@ def draw_lane(warped, undist, left_fitx, right_fitx, PerspTransInv, ploty):
 	newwarp = cv2.warpPerspective(color_warp, PerspTransInv, (undist.shape[1], undist.shape[0])) 
 	# Combine the result with the original image
 	result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
-	plt.imshow(result)
-	plt.show()
+	# plt.imshow(result)
+	# plt.show()
+
+	print('Lane lines drawn on the image!')
+	return result
+
+#======================================================================
+#=== radius of curvature and distance =================================
+#======================================================================
+
+# Calculates radius of curvature and distance from lane center 
+def measure_curvature(bin_img, l_fit, r_fit, l_lane_inds, r_lane_inds, ploty):
+  
+  # Define conversions in x and y from pixels space to meters
+  ym_per_pix = 30/720 # meters per pixel in y dimension
+  xm_per_pix = 3.7/700 # meters per pixel in x dimension
+  left_curverad, right_curverad, center_dist = (0, 0, 0)
+
+  # Define maximum y-value corresponding to the bottom of the image
+  y_eval = np.max(ploty)
+
+  # Identify the x and y positions of all nonzero pixels in the image
+  nonzero = bin_img.nonzero()
+  nonzeroy = np.array(nonzero[0])
+  nonzerox = np.array(nonzero[1])
+
+  leftx = nonzerox[l_lane_inds]
+  lefty = nonzeroy[l_lane_inds] 
+  rightx = nonzerox[r_lane_inds]
+  righty = nonzeroy[r_lane_inds]
+  
+  # Fit new polynomials to x,y in world space
+  left_fit_cr = np.polyfit(lefty*ym_per_pix, leftx*xm_per_pix, 2)
+  right_fit_cr = np.polyfit(righty*ym_per_pix, rightx*xm_per_pix, 2)
+  
+  # Calculate the new radii of curvature
+  left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
+  right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
+  
+  # Now our radius of curvature is in meters
+  print(left_curverad,'m',right_curverad,'m')
+  return left_curverad, right_curverad
+
+#======================================================================
+#=== Draw Radius of Curvature =========================================
+#======================================================================
+
+def draw_data(img, curv_rad):
+    new_img = np.copy(img)
+    font = cv2.FONT_HERSHEY_DUPLEX
+    text = 'Curve radius: ' + '{:04.2f}'.format(curv_rad) + 'm'
+    cv2.putText(new_img, text, (40,70), font, 1.5, (200,255,155), 2, cv2.LINE_AA)
+    print('Lane data drawn on the image!')
+    return new_img
 
 #==========================================================================
 #=== Processing Image Pipeline ============================================
@@ -463,12 +515,16 @@ def process_image(img):
 	else:
 		left_fitx, right_fitx, left_fit, right_fit, left_lane_inds, right_lane_inds, ploty = next_fit_polynomial(grad_and_color_combined, left_fit, right_fit)
 	
-	img_out1 = draw_lane(grad_and_color_combined, undist, left_fitx, right_fitx, PerspTransInv, ploty)
-	return img_out1
-  # Visualizes undistortion one by one
-	# cv2.imshow('FRAME',grad_and_color_combined)
-	# cv2.waitKey(0)
-	# cv2.destroyAllWindows()
+	img_with_lane = draw_lane(grad_and_color_combined, undist, left_fitx, right_fitx, PerspTransInv, ploty)
+	
+	rad_left, rad_right = measure_curvature(grad_and_color_combined, left_fitx, right_fitx, left_lane_inds, right_lane_inds, ploty)
+	img_with_lane_and_data = draw_data(img_with_lane, (rad_left+rad_right)/2)
+  
+	processed_img = cv2.cvtColor(img_with_lane_and_data, cv2.COLOR_BGR2RGB)
+  # Visualizes the image with lane line fits and radius data
+	cv2.imshow('FRAME', processed_img)
+	cv2.waitKey(0)
+	cv2.destroyAllWindows()
 
 #======================================================================
 #=== Tracking Lane Lines ==============================================
@@ -476,37 +532,39 @@ def process_image(img):
 
 # Defines a class to receive the characteristics of each line detection
 class Line():
-    def __init__(self):
-        # was the line detected in the last iteration?
-        self.detected = False  
-        # x values of the last n fits of the line
-        self.recent_xfitted = [] 
-        #average x values of the fitted line over the last n iterations
-        self.bestx = None     
-        #polynomial coefficients averaged over the last n iterations
-        self.best_fit = None  
-        #polynomial coefficients for the most recent fit
-        self.current_fit = [np.array([False])]  
-        #radius of curvature of the line in some units
-        self.radius_of_curvature = None 
-        #distance in meters of vehicle center from the line
-        self.line_base_pos = None 
-        #difference in fit coefficients between last and new fits
-        self.diffs = np.array([0,0,0], dtype='float') 
-        #x values for detected line pixels
-        self.allx = None  
-        #y values for detected line pixels
-        self.ally = None
+  def __init__(self):
+    # was the line detected in the last iteration?
+    self.detected = False  
+    # x values of the last n fits of the line
+    self.recent_xfitted = [] 
+    #average x values of the fitted line over the last n iterations
+    self.bestx = None     
+    #polynomial coefficients averaged over the last n iterations
+    self.best_fit = None  
+    #polynomial coefficients for the most recent fit
+    self.current_fit = [np.array([False])]  
+    #radius of curvature of the line in some units
+    self.radius_of_curvature = None 
+    #distance in meters of vehicle center from the line
+    self.line_base_pos = None 
+    #difference in fit coefficients between last and new fits
+    self.diffs = np.array([0,0,0], dtype='float') 
+    #x values for detected line pixels
+    self.allx = None  
+    #y values for detected line pixels
+    self.ally = None
 
 l_line = Line()
 r_line = Line()
-# for image in range(0, 5):
-# 	process_image(img)
-# 	image += 1
-video_output1 = 'challenge_video_output.mp4'
-video_input1 = VideoFileClip('challenge_video.mp4')
-print (video_input1.fps) 
-video_input2 = video_input1.subclip(10, 15)
-processed_video = video_input2.fl_image(process_image)
 
-processed_video.write_videofile(video_output1, audio=False)
+for image in range(0, 2):
+	process_image(img)
+	image += 1
+
+# video_output1 = 'challenge_video_output.mp4'
+# video_input1 = VideoFileClip('challenge_video.mp4')
+# print (video_input1.fps) 
+# video_input2 = video_input1.subclip(10, 15)
+# processed_video = video_input2.fl_image(process_image)
+
+# processed_video.write_videofile(video_output1, audio=False)
