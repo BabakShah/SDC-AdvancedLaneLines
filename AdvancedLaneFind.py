@@ -466,7 +466,7 @@ def draw_data(img, curv_rad):
     new_img = np.copy(img)
     font = cv2.FONT_HERSHEY_DUPLEX
     text = 'Curve radius: ' + '{:04.2f}'.format(curv_rad) + 'm'
-    cv2.putText(new_img, text, (40,70), font, 1.5, (200,255,155), 2, cv2.LINE_AA)
+    cv2.putText(new_img, text, (40,70), font, 1.5, (200,250,150), 2, cv2.LINE_AA)
     print('Lane data drawn on the image!')
     return new_img
 
