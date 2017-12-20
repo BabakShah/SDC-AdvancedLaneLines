@@ -53,7 +53,7 @@ for i, fname in enumerate(images):
     imgpoints.append(corners2)
 
 # Read an image from camera_cal_images
-img = cv2.imread('./camera_cal_images/calibration1.jpg')
+img = cv2.imread('../camera_cal_images/calibration1.jpg')
 img_size = (img.shape[1], img.shape[0])
 
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size, None, None)

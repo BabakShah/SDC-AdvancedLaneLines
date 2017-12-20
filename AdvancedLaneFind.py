@@ -25,7 +25,7 @@ mtx = dist_pickle["mtx"]
 dist = dist_pickle["dist"]
 
 # Reads an image
-img = cv2.imread("./input_images/test4.jpg") 
+# img = cv2.imread("./input_images/test4.jpg") 
 
 #=============================================================================
 #=== Undistorting Image ======================================================
@@ -65,7 +65,7 @@ def undistort(img):
 
 def perspecrive_transform(undist):
 	
-	img_size = (img.shape[1], img.shape[0])
+	img_size = (undist.shape[1], undist.shape[0])
 
 	# Source points
 	src = np.float32([(575,460),
@@ -522,10 +522,10 @@ def process_image(img):
   
 	processed_img = cv2.cvtColor(img_with_lane_and_data, cv2.COLOR_BGR2RGB)
   # Visualizes the image with lane line fits and radius data
-	cv2.imshow('FRAME', processed_img)
-	cv2.waitKey(0)
-	cv2.destroyAllWindows()
-
+	# cv2.imshow('FRAME', processed_img)
+	# cv2.waitKey(0)
+	# cv2.destroyAllWindows()
+	return processed_img
 #======================================================================
 #=== Tracking Lane Lines ==============================================
 #======================================================================
@@ -542,7 +542,8 @@ class Line():
     #polynomial coefficients averaged over the last n iterations
     self.best_fit = None  
     #polynomial coefficients for the most recent fit
-    self.current_fit = [np.array([False])]  
+    # self.current_fit = [np.array([False])]  
+    self.current_fit = []
     #radius of curvature of the line in some units
     self.radius_of_curvature = None 
     #distance in meters of vehicle center from the line
@@ -557,14 +558,16 @@ class Line():
 l_line = Line()
 r_line = Line()
 
-for image in range(0, 2):
-	process_image(img)
-	image += 1
+# for image in range(0, 2):
+# 	process_image(img)
+# 	image += 1
 
-# video_output1 = 'challenge_video_output.mp4'
-# video_input1 = VideoFileClip('challenge_video.mp4')
+input_video = VideoFileClip('project_video_test.mp4')
+output_video = input_video.fl_image(process_image)
+# output_video = 
+# .subclip(10, 15)
 # print (video_input1.fps) 
-# video_input2 = video_input1.subclip(10, 15)
-# processed_video = video_input2.fl_image(process_image)
+# video_input2 = video_input1
+# processed_video = video_input1.fl_image(process_image)
 
-# processed_video.write_videofile(video_output1, audio=False)
+output_video.write_videofile('project_video_test_output.mp4', audio=False)
