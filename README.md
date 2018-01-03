@@ -55,10 +55,10 @@ The code for my perspective transform includes two functions. First, calculated 
 
 | Source        | Destination   | 
 |:-------------:|:-------------:| 
-| 575, 460      | 450, 0        | 
-| 707, 460      | 850, 0     	  |
-| 260, 680      | 450, 700  	  |
-| 1050, 680     | 850, 700      |
+| 595, 450      | 450, 0        | 
+| 685, 450      | 830, 0     	  |
+| 265, 720      | 450, 700  	  |
+| 1020, 720     | 830, 700      |
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto the original image and its transformed counterpart..
 
