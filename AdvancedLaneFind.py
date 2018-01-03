@@ -3,6 +3,7 @@
 #=============================================================================
 
 import numpy as np
+import os
 import cv2
 import pickle
 import glob
@@ -25,7 +26,8 @@ mtx = dist_pickle["mtx"]
 dist = dist_pickle["dist"]
 
 # Reads an image
-# img = cv2.imread("./input_images/test4.jpg") 
+img = cv2.imread("./input_images/test4.jpg") 
+# img = cv2.imread("./Error_4.png") 
 
 #=============================================================================
 #=== Undistorting Image ======================================================
@@ -68,30 +70,31 @@ def perspecrive_transform(undist):
 	img_size = (undist.shape[1], undist.shape[0])
 
 	# Source points
-	src = np.float32([(575,460),
-	                  (707,460), 
-	                  (260,680), 
-	                  (1050,680)])
+	src = np.float32([(595,450),
+	                  (685,450), 
+	                  (265,720), 
+	                  (1020,720)])
 
 	# Destination points
 	dst = np.float32([(450,0),
-	                  (850,0),
+	                  (830,0),
 	                  (450,700),
-	                  (850,700)])
+	                  (830,700)])
 
 	# Calculates a perspective transform from four pairs of the .. 
 	# corresponding points (quadrangle coordinates in the source ..
 	# and destination image)
 	PerspTrans = cv2.getPerspectiveTransform(src, dst)
 	PerspTransInv = cv2.getPerspectiveTransform(dst, src)
-
-	# fig2, axs = plt.subplots(4, 2, figsize=(24, 10))
-	# fig2.tight_layout()
-	# axs = axs.ravel()
-
+	
 	# for i, image in enumerate(images):
 	# Applies a perspective transform to the image (front view to a top-down view)
 	warped = cv2.warpPerspective(undist, PerspTrans, img_size, flags=cv2.INTER_LINEAR)
+
+	# fig2, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
+	# fig2.tight_layout()
+	# ax1.imshow(undist)
+	# ax2.imshow(warped)
 
 	# Visualizes undistortion one by one
 	# cv2.imshow('FRAME2',dst)
@@ -118,7 +121,7 @@ def perspecrive_transform(undist):
 #===============================
 #=== Calculates the gradient ===
 #===============================
-def abs_sobel_thresh(img, orient, thresh_min=25, thresh_max=255):
+def abs_sobel_thresh(img, orient, thresh_min=10, thresh_max=150):
 
   # Converts the image to grayscale
   gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -146,7 +149,7 @@ def abs_sobel_thresh(img, orient, thresh_min=25, thresh_max=255):
 #=== Calculates gradient magnitude ===
 #=====================================
 
-def mag_thresh(img, sobel_kernel=25, mag_thresh=(25, 255)):
+def mag_thresh(img, sobel_kernel=25, mag_thresh=(50, 100)):
   
   # Converts the image to grayscale
   gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -173,7 +176,7 @@ def mag_thresh(img, sobel_kernel=25, mag_thresh=(25, 255)):
 #=== Calculates gradient direction ===
 #=====================================
 
-def dir_threshold(img, sobel_kernel=7, thresh=(0, 0.09)):
+def dir_threshold(img, sobel_kernel=25, thresh=(0.85, 1.15)):
 
   # Converts the image to grayscale
   gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -201,13 +204,13 @@ def dir_threshold(img, sobel_kernel=7, thresh=(0, 0.09)):
 #=== Color Space Threshold =============================================
 #=======================================================================
 
-def hls_threshold(img, h_thresh=(15, 100), l_thresh=(10, 150), s_thresh=(90, 255)):
+def hls_threshold(img, h_thresh=(15, 100), l_thresh=(220, 255), s_thresh=(105, 205)):
     
     # Convert to HLS color space
     hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
-    H = hls[:,:,1]
+    H = hls[:,:,0]
     H = H*(255/np.max(H))
-    L = hls[:,:,0]
+    L = hls[:,:,1]
     L = L*(255/np.max(L))
     S = hls[:,:,2]
     S = S*(255/np.max(S))
@@ -409,7 +412,7 @@ def draw_lane(warped, undist, left_fitx, right_fitx, PerspTransInv, ploty):
 	pts = np.hstack((pts_left, pts_right))
 
 	# Draw the lane onto the warped blank image
-	cv2.fillPoly(color_warp, np.int_([pts]), (0,255, 0))
+	cv2.fillPoly(color_warp, np.int_([pts]), (0,255, 255))
 
 	# Warp the blank back to original image space using inverse perspective matrix (Minv)
 	newwarp = cv2.warpPerspective(color_warp, PerspTransInv, (undist.shape[1], undist.shape[0])) 
@@ -421,6 +424,15 @@ def draw_lane(warped, undist, left_fitx, right_fitx, PerspTransInv, ploty):
 	print('Lane lines drawn on the image!')
 	return result
 
+def polynomial(line, value):
+
+    a_coef = line[0]
+    b_coef = line[1]
+    c_coef = line[2]
+    poly = (a_coef * value ** 2) + (b_coef * value) + c_coef
+
+    return poly
+
 #======================================================================
 #=== radius of curvature and distance =================================
 #======================================================================
@@ -429,8 +441,10 @@ def draw_lane(warped, undist, left_fitx, right_fitx, PerspTransInv, ploty):
 def measure_curvature(bin_img, l_fit, r_fit, l_lane_inds, r_lane_inds, ploty):
   
   # Define conversions in x and y from pixels space to meters
-  ym_per_pix = 30/720 # meters per pixel in y dimension
+  ym_per_pix = 30./720 # meters per pixel in y dimension
   xm_per_pix = 3.7/700 # meters per pixel in x dimension
+  carm_pos = (1280 / 2) * xm_per_pix # lane center pos in meters
+
   left_curverad, right_curverad, center_dist = (0, 0, 0)
 
   # Define maximum y-value corresponding to the bottom of the image
@@ -453,20 +467,26 @@ def measure_curvature(bin_img, l_fit, r_fit, l_lane_inds, r_lane_inds, ploty):
   # Calculate the new radii of curvature
   left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
   right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
-  
+
+  left_line = polynomial(left_fit_cr, bin_img.shape[0] * ym_per_pix)
+  right_line = polynomial(right_fit_cr, bin_img.shape[0] * ym_per_pix)
+  center_dist = carm_pos - ((left_line + right_line) / 2)
+
   # Now our radius of curvature is in meters
-  print(left_curverad,'m',right_curverad,'m')
-  return left_curverad, right_curverad
+  print('Left lane radius: ',left_curverad,'m ','Right lane radius: ',right_curverad,'m' , 'Center lane radius: ',center_dist)
+  return left_curverad, right_curverad, center_dist
 
 #======================================================================
 #=== Draw Radius of Curvature =========================================
 #======================================================================
 
-def draw_data(img, curv_rad):
+def draw_data(img, curv_rad, center_rad):
     new_img = np.copy(img)
     font = cv2.FONT_HERSHEY_DUPLEX
-    text = 'Curve radius: ' + '{:04.2f}'.format(curv_rad) + 'm'
-    cv2.putText(new_img, text, (40,70), font, 1.5, (200,250,150), 2, cv2.LINE_AA)
+    text1 = 'Curve radius: ' + '{:04.2f}'.format(curv_rad) + 'm' 
+    cv2.putText(new_img, text1, (40,70), font, 1.5, (0,255,255), 2, cv2.LINE_AA)
+    text2 = 'Center distance: ' + '{:04.2f}'.format(center_rad) + 'm'
+    cv2.putText(new_img, text2, (40,120), font, 1.5, (0,255,255), 2, cv2.LINE_AA)
     print('Lane data drawn on the image!')
     return new_img
 
@@ -494,19 +514,36 @@ def process_image(img):
   # applies them to create a thresholded binary image 
 	h_binary, l_binary, s_binary = hls_threshold(warped)
 
-	gradient_combined = np.zeros_like(mag_binary)
-	color_combined = np.zeros_like(l_binary)
-	grad_and_color_combined = np.zeros_like(l_binary)
+	gradient_combined = np.zeros_like(grad_binary_x)
+	color_combined = np.zeros_like(grad_binary_x)
+	grad_and_color_combined = np.zeros_like(grad_binary_x)
+
+	R_color = warped[:,:,0]
+	r_thresh = (200, 255)
+	r_binary = np.zeros_like(R_color)
+	r_binary[(R_color > r_thresh[0]) & (R_color <= r_thresh[1])] = 1
 
   # Combines the gradient binary thresholds
 	gradient_combined[((grad_binary_x == 1) & (grad_binary_y == 1)) | ((mag_binary == 1) & (dir_binary == 1))] = 1
-  
+	# gradient_combined[((grad_binary_x == 1) & (grad_binary_y == 1))] = 1
   # Combines the color space binary thresholds
 	color_combined[((l_binary == 1) & (s_binary == 1) & (h_binary == 0))] = 1
   
   # Combines the combined gradient and combined color binary thresholds
-	grad_and_color_combined[((gradient_combined == 1) | (color_combined == 1))] = 1
+	grad_and_color_combined[(((grad_binary_x == 1) & (s_binary == 1)) | ((grad_binary_x == 1) & (r_binary == 1)) | ((s_binary == 1) & (r_binary == 1)))] = 1
+	# grad_and_color_combined[((grad_binary_x == 1) & (s_binary == 1) | (grad_binary_x == 1) & (l_binary == 1))] = 1
 	print('Gradient and color space thresholds combined!')
+
+	# fig2, (ax1, ax2, ax3, ax4, ax5, ax6, ax7) = plt.subplots(1, 7, figsize=(20, 10))
+	# fig2.tight_layout()
+	# ax1.imshow(undist)
+	# ax2.imshow(warped)
+	# ax3.imshow(grad_binary_x)
+	# ax4.imshow(mag_binary)
+	# ax5.imshow(r_binary)
+	# ax6.imshow(s_binary)
+	# ax7.imshow(grad_and_color_combined)
+	# plt.show()
 
 	# If it's not the first time fitting, uses next_fit_polynomial, otherwise uses initial_fit_polynomial
 	if not l_line.detected or not r_line.detected:
@@ -517,14 +554,19 @@ def process_image(img):
 	
 	img_with_lane = draw_lane(grad_and_color_combined, undist, left_fitx, right_fitx, PerspTransInv, ploty)
 	
-	rad_left, rad_right = measure_curvature(grad_and_color_combined, left_fitx, right_fitx, left_lane_inds, right_lane_inds, ploty)
-	img_with_lane_and_data = draw_data(img_with_lane, (rad_left+rad_right)/2)
+	rad_left, rad_right, rad_center = measure_curvature(grad_and_color_combined, left_fitx, right_fitx, left_lane_inds, right_lane_inds, ploty)
+	img_with_lane_and_data = draw_data(img_with_lane, (rad_left+rad_right)/2, rad_center)
   
 	processed_img = cv2.cvtColor(img_with_lane_and_data, cv2.COLOR_BGR2RGB)
-  # Visualizes the image with lane line fits and radius data
+  	# Visualizes the image with lane line fits and radius data
 	# cv2.imshow('FRAME', processed_img)
 	# cv2.waitKey(0)
 	# cv2.destroyAllWindows()
+
+	
+	plt.imshow(img_with_lane_and_data)
+	plt.show()
+
 	return processed_img
 #======================================================================
 #=== Tracking Lane Lines ==============================================
@@ -558,16 +600,16 @@ class Line():
 l_line = Line()
 r_line = Line()
 
-# for image in range(0, 2):
-# 	process_image(img)
-# 	image += 1
+for image in range(0, 2):
+	process_image(img)
+	image += 1
 
-input_video = VideoFileClip('project_video_test.mp4')
-output_video = input_video.fl_image(process_image)
+# input_video = VideoFileClip('project_video_test.mp4')
+# output_video = input_video.fl_image(process_image)
 # output_video = 
 # .subclip(10, 15)
 # print (video_input1.fps) 
 # video_input2 = video_input1
 # processed_video = video_input1.fl_image(process_image)
 
-output_video.write_videofile('project_video_test_output.mp4', audio=False)
+# output_video.write_videofile('project_video_test_output3.mp4', audio=False)

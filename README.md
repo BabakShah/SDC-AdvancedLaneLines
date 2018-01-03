@@ -101,11 +101,14 @@ Then I did fit my lane lines with a 2nd order polynomial like this:
 The function to calculate the radius of curvature of the lane is as follows:
 
 ```python
+# Calculates radius of curvature and distance from lane center 
 def measure_curvature(bin_img, l_fit, r_fit, l_lane_inds, r_lane_inds, ploty):
   
   # Define conversions in x and y from pixels space to meters
-  ym_per_pix = 30/720 # meters per pixel in y dimension
+  ym_per_pix = 30./720 # meters per pixel in y dimension
   xm_per_pix = 3.7/700 # meters per pixel in x dimension
+  carm_pos = (1280 / 2) * xm_per_pix # lane center pos in meters
+
   left_curverad, right_curverad, center_dist = (0, 0, 0)
 
   # Define maximum y-value corresponding to the bottom of the image
@@ -128,17 +131,21 @@ def measure_curvature(bin_img, l_fit, r_fit, l_lane_inds, r_lane_inds, ploty):
   # Calculate the new radii of curvature
   left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
   right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
-  
+
+  left_line = polynomial(left_fit_cr, bin_img.shape[0] * ym_per_pix)
+  right_line = polynomial(right_fit_cr, bin_img.shape[0] * ym_per_pix)
+  center_dist = carm_pos - ((left_line + right_line) / 2)
+
   # Now our radius of curvature is in meters
-  print(left_curverad,'m',right_curverad,'m')
-  return left_curverad, right_curverad
+  print('Left lane radius: ',left_curverad,'m ','Right lane radius: ',right_curverad,'m' , 'Center lane radius: ',center_dist)
+  return left_curverad, right_curverad, center_dist
 ```
 #### 6. Image of result plotted back down onto the road such that the lane area is identified clearly
 
 With lane radius calculations:
 
 <center>
-<img src="./output_images/Output.png" alt="Road image" style="width: 90%;"/>
+<img src="./output_images/Final_output.png" alt="Road image" style="width: 90%;"/>
 </center>
 ---
 
@@ -146,11 +153,11 @@ With lane radius calculations:
 
 #### 1. Final video output 
 
-Here's a [link to my video result](./project_video_test_output.mp4) 
+Here's a [link to my video result](./Final_project_video_test_output.mp4) 
 
 ---
 
 ### Discussion on making the pipeline more robust?
 
-I will improve my algorithm to be more robust. These include different color space thresholding, removing new fits that deviate more than a certain amount or if fits are not parallel force parallel fits. 
+This was a very challenging project, meaning that coming up with lane line detection and tracking pipeline is feasible using computer vision techniques but testing the pipeline under various scenarios and conditions such as faded lane lines or shadows on the lane lines, etc. is what makes this project more challenging. Testing the pipeline is very important to make sure the algorithm can be generalized to different roads and conditions. Some conditions such as faded lane lines or shadows was addressed using different gradient or color space thresholds, also the region of interest definition for perspective transform is very important in accurate detection and tracking. I will further improve my algorithm to be more robust. These include testing more color space thresholding (or different combinations), removing new fits that deviate more than a certain amount or if fits are not parallel force parallel fits, smoothing out the detection and optimizing the python script so that the code execution and lane line detction and tracking can be done in real-time. Also, would like to try deep learning techniques for the same problem. 
 
