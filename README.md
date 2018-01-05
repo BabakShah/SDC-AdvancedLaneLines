@@ -1,4 +1,4 @@
-# Self-driving Car Project: Advanced Lane Lines Detection and Tracking
+# Self-Driving Car Project: Advanced Lane Lines Detection and Tracking
 
 <center>
 <img src="output_images/Lane-Keeping-Assist.jpg" width="90%" alt="NVIDIA end-to-end learning" />
